@@ -1,19 +1,33 @@
-import 'package:calculadora_imc_flutter/classes/Pessoa.dart';
+import 'package:calculadora_imc_flutter/classes/pessoa_model.dart';
+import 'package:calculadora_imc_flutter/repositories/pessoa_repository.dart';
 import 'package:flutter/material.dart';
 
 class IMCPage extends StatefulWidget {
-  IMCPage({super.key});
+  const IMCPage({super.key});
 
   @override
   State<IMCPage> createState() => _IMCPageState();
 }
 
 class _IMCPageState extends State<IMCPage> {
+  late PessoaRepository pessoaRepository;
   TextEditingController pesoController = TextEditingController(text: "");
 
   TextEditingController alturaController = TextEditingController(text: "");
 
-  Pessoa? pessoa;
+  PessoaModel pessoa = PessoaModel.noParams();
+  @override
+  void initState() {
+    super.initState();
+    carregar();
+  }
+
+  carregar() async {
+    pessoaRepository = await PessoaRepository.load();
+    pessoa = pessoaRepository.obterDados();
+    pesoController.text = (pessoa.peso ?? 0).toString();
+    alturaController.text = (pessoa.altura ?? 0).toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,8 +68,9 @@ class _IMCPageState extends State<IMCPage> {
               child: OutlinedButton(
                 onPressed: () {
                   setState(() {
-                    pessoa = Pessoa(double.parse(pesoController.text),
-                        double.parse(alturaController.text));
+                    pessoa.altura = double.tryParse(alturaController.text) ?? 0;
+                    pessoa.peso = double.tryParse(pesoController.text) ?? 0;
+                    pessoaRepository.salvar(pessoa);
                   });
                 },
                 style: const ButtonStyle(
@@ -68,9 +83,9 @@ class _IMCPageState extends State<IMCPage> {
               ),
             ),
             Container(
-              child: pessoa != null
+              child: pessoa.altura != 0 && pessoa.peso != 0
                   ? Text(
-                      "Peso: ${pessoa!.altura}\nPeso: ${pessoa!.peso}\nIMC: ${pessoa!.calcularIMC().toStringAsFixed(2)}")
+                      "Peso: ${pessoa.altura}\nPeso: ${pessoa.peso}\nIMC: ${pessoa.calcularIMC().toStringAsFixed(2)}")
                   : null,
             ),
           ],
