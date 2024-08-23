@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
         colorScheme: const ColorScheme.dark(),
         useMaterial3: true,
       ),
-      home: IMCPage(),
+      home: const IMCPage(),
     );
   }
 }
